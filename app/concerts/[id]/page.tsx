@@ -1,29 +1,39 @@
-import { notFound } from "next/navigation"
-import Image from "next/image"
-import { Calendar, Clock, MapPin, Music, Users } from "lucide-react"
+import { notFound } from "next/navigation";
+import Image from "next/image";
+import { Calendar, Clock, MapPin, Music, Users } from "lucide-react";
 
-import { TicketSelector } from "@/components/ticket-selector"
-import { concerts } from "@/lib/data"
-import { formatDate } from "@/lib/utils"
+import { TicketSelector } from "@/components/ticket-selector";
+import { formatDate } from "@/lib/utils";
+import { prisma } from "@/lib/prisma"; // Asegurate de que este archivo esté creado
 
 interface ConcertPageProps {
   params: {
-    id: string
-  }
+    id: string;
+  };
 }
 
-export default function ConcertPage({ params }: ConcertPageProps) {
-  const concert = concerts.find((c) => c.id === params.id)
+export default async function ConcertPage({ params }: ConcertPageProps) {
+  const concert = await prisma.event.findUnique({
+    where: {
+      id: params.id,
+    },
+  });
 
   if (!concert) {
-    notFound()
+    notFound();
   }
 
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="grid gap-8 md:grid-cols-2">
         <div className="relative aspect-video overflow-hidden rounded-lg">
-          <Image src={concert.image || "/placeholder.svg"} alt={concert.name} fill className="object-cover" priority />
+          <Image
+            src={concert.image || "/placeholder.svg"}
+            alt={concert.name}
+            fill
+            className="object-cover"
+            priority
+          />
         </div>
         <div>
           <h1 className="mb-4 text-3xl font-bold">{concert.name}</h1>
@@ -31,7 +41,7 @@ export default function ConcertPage({ params }: ConcertPageProps) {
           <div className="mb-6 space-y-2">
             <div className="flex items-center">
               <Calendar className="mr-2 h-5 w-5 text-muted-foreground" />
-              <span>{formatDate(concert.date)}</span>
+              <span>{formatDate(concert.date.toString())}</span>
             </div>
             <div className="flex items-center">
               <Clock className="mr-2 h-5 w-5 text-muted-foreground" />
@@ -67,5 +77,5 @@ export default function ConcertPage({ params }: ConcertPageProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }
